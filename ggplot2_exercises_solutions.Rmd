@@ -1,0 +1,176 @@
+---
+title: "ggplot2_exercises_solution"
+author: "Jason Baik"
+date: "January 7, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## 3.5.5 Exercises
+
+1. 
+```{r}
+library(tidyverse)
+head(mpg)
+mpg %>% 
+  ggplot(aes(x = cyl, y = hwy)) +
+  geom_boxplot(aes(group = cyl))
+  
+```
+* I need to set group aesthetic and set it to cyl
+
+2. 
+```{r}
+mpg %>% 
+  ggplot(aes(displ, cty)) +
+  geom_boxplot(aes(group = displ))
+```
+
+3. Tricky
+
+4. 
+```{r}
+ggplot(mpg, aes(drv)) +
+  geom_bar() # 3 bars
+
+ggplot(mpg, aes(drv, fill = hwy, group = hwy)) +
+  geom_bar() # 3 bars
+
+library(dplyr)
+mpg2 <- mpg %>% arrange(hwy) %>% mutate(id = seq_along(hwy))
+ggplot(mpg2, aes(drv, fill = hwy, group = id), color = "red") +
+  geom_bar() # 3 bars
+```
+
+5.
+```{r}
+install.packages("babynames")
+library(babynames)
+hadley <- filter(babynames, name == "Hadley")
+hadley
+ggplot(hadley, aes(year, n, color = sex)) +
+  geom_line() +
+  labs(y = "Count", x = "Year", title = "The baby name Hadley is more popular among baby girls")
+  
+```
+
+## 3.11.1 Exercises
+
+1. 
+```{r}
+diamonds %>% 
+  ggplot(aes(carat)) +
+  geom_histogram(binwidth = 0.1)
+# A binwidth of 0.1 tells you the most correct graph
+```
+
+2.
+```{r}
+diamonds %>% 
+  ggplot(aes(price)) +
+  geom_histogram()
+
+# I see a distribution where as price increases, count decreases. Right-skewed.
+```
+
+3.
+```{r}
+ggplot(diamonds, aes(clarity, price)) +
+  geom_boxplot()
+# It seems like as clarity changes from worst (I1) to best (IF), median of prices decreases
+```
+
+4.
+```{r}
+ggplot(diamonds, aes(depth)) +
+  geom_density(alpha = 0.1) +
+  geom_freqpoly()
+```
+
+## 5.4.3  Exercises
+1.
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(mpg$disp, mpg$hwy))
+# can be turned into
+ggplot(mpg) +
+  geom_point(aes(disp, hwy))
+
+ggplot() + 
+  geom_point(mapping = aes(y = hwy, x = cty), data = mpg) + 
+  geom_smooth(data = mpg, mapping = aes(cty, hwy)) 
+# can be turned into
+ggplot(mpg, aes(cty, hwy)) + 
+  geom_point() +
+  geom_smooth()
+
+ggplot(diamonds, aes(carat, price)) +
+  geom_point(aes(log(brainwt), log(bodywt)), data = msleep) 
+# can be turned into
+ggplot() +
+  geom_point(aes(log(brainwt), log(bodywt)), data = msleep) 
+```
+2.
+```{r}
+ggplot(mpg) +
+  geom_point(aes(class, cty)) +
+  geom_boxplot(aes(trans, hwy))
+```
+This doesn't work because there are double x/y values. R simply ignores the latter values,
+
+3. 
+```{r}
+ggplot(mpg) +
+  geom_point(aes(class, cty)) +
+  geom_line(aes(hwy, cty))
+# R gets confused and only displays the first x-value on the x-axis
+
+ggplot(mpg) +
+  geom_point(aes(hwy, cty)) +
+  geom_line(aes(class, cty))
+# It gives an error: Discrete value supplied to continuous scale
+```
+
+## 5.5.1 Exercises
+
+Question 4.
+  1. geom_violin()
+  2. 
+```{r}
+ggplot(mpg) +
+  geom_jitter(aes(x = hwy, y = cty, alpha = 0.1, size = cyl)) +
+  theme(legend.position = "none")
+```
+  3. 
+```{r}
+ggplot(mpg) +
+  geom_hex(aes(x = hwy, y = cty, size = cyl)) +
+  theme(legend.position = "none")
+```
+  4.
+```{r}
+ggplot(mpg, aes(cyl, drv)) +
+  geom_count() +
+  theme(legend.position = "none")
+```
+  5. geom_area()
+  6. geom_path
+  
+Question 5.
+* geom_line() or geom_path()
+* geom_bar() 
+* geom_area() or geom_line() or geom_step()
+* geom_map()
+* geom_label()
+
+```{r}
+ggplot(diamonds, aes(price)) +
+  geom_histogram(binwidth = 500)
+
+ggplot(diamonds, aes(price)) +
+  geom_histogram(aes(y = ..density..), binwidth = 500)
+```
