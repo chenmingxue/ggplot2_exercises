@@ -1,5 +1,5 @@
 ---
-title: "ggplot2 Exercises Solution"
+title: "ggplot2_exercises_solution"
 author: "Jason Baik"
 date: "January 7, 2018"
 output: html_document
