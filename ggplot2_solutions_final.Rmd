@@ -1,0 +1,163 @@
+---
+title: "ggplot2_exercises_solution"
+author: "Jason Baik"
+date: "January 7, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## 2.2.1 Exercises
+
+
+1. 5 Functions for more information about mpg dataset
+```{r}
+library(tidyverse)
+```
+
+```{r}
+# Get structure of mpg
+str(mpg)
+glimpse(mpg)
+
+# Dimensions
+dim(mpg)
+
+# A small glimpse of the data
+head(mpg)
+tail(mpg)
+
+# Variables in the data
+names(mpg)
+
+```
+
+2. Finding out other datasets in ggplot2
+  
+  > data(package = "ggplot2") 
+*This should open up a new window named "R data sets"
+
+3. Conversion of cty and hwy into European standard of 1/100km
+```{r}
+# Original cty and hwy variables are in miles per gallon (mpg). So, I did some research online: (https://www.unitjuggler.com/convert-fuelconsumption-from-mpg-to-lper100km.html) 
+#Let's multiply cty and hwy by 235.21
+mpg %>% 
+  mutate(cty = cty*235.21, hwy = hwy*235.21)
+
+
+```
+
+4. Manufacturer with the most models? Model with most variations? Remove redundant specification of drive train from model name?
+```{r}
+mpg %>% 
+  count(manufacturer, sort = T)
+
+# Assumption: Model with the most variations means model with most variations in drv variable
+mpg %>% 
+  group_by(model, manufacturer, drv) %>% 
+  summarise(sum_drv = as.numeric(table(drv)))
+  
+
+```
+* Dodge has the most models!  
+_Need help with getting varations in the models_
+
+## 2.3.1 Exercises
+
+
+1. Relationship between cty and hwy.
+```{r}
+mpg %>% ggplot(aes(cty, hwy)) +
+  geom_point()
+  
+```
+
+* Relationship is linear, positive, and strong without any glaring outliers. The only concern I have about the plot is that _it is almost too perfect_. Perhaps multicollinearity?
+
+2.
+```{r, echo = F}
+ggplot(mpg, aes(model, manufacturer)) +
+  geom_point()
+```
+* The problem is there are too many x-axis labels, so its impossible to read the values. One fix would be to shorten the model names: get rid of drv values ,manufacturers, and spaces. If this does not suffice, rotate the x-axis values 90 degrees.
+
+3. The first two graphs will be scatterplots. #1 graph will have a high correlation and be linear, as we saw above. #2 graph should show a positive relationship (common sense?). #3 graph will be a line graph that changes with time (x-axis). #4 graph will be a histogram with counts of cty on the y-axis.
+
+
+
+## 2.4.1 Exercises
+
+
+1.
+```{r, echo = F}
+# Mapping to categoorical variable
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = drv))
+
+# Mapping to continuous variable
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = year))
+```
+* Based upon these graphs, mapping color to categorical variable is informative while mapping it to continiuous variable is not. 
+
+```{r, echo = F, error = T}
+# Mapping to categoorical variable
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(shape = drv))
+
+# Mapping to continuous variable
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(shape = year))
+```
+
+
+Mapping categorical variable to shape works (produces a graph), but readability is very poor. Mapping to continuous variable throws an error
+
+```{r}
+# Mapping to categoorical variable
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(size = drv))
+
+# Mapping to continuous variable
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(size = year))
+```
+* Mapping categorical/continuous variable to size works, but readbility is very poor.
+
+
+### Using 2 aesthetics in a plot
+```{r, echo = F}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(size = drv, color = drv))
+
+```
+* Ah, readability is much better.
+
+2. When you map a continuous variable to shape, you get an error. Why:The shape palette can deal with a maximum of 6 discrete values because more than 6 becomes difficult to discriminate (ggplot2 documentation).
+
+```{r, echo = F}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(shape = trans))
+```
+* ggplot2 only takes 6 discrete values! If we want more shapes, we have to manually designate them.
+
+3.
+```{r, echo = F}
+ggplot(mpg, aes(drv, cty)) +
+  geom_bar(stat = "identity")
+```
+* Looks like "f" has the most fuel economy, followed by "4" and "r"
+
+```{r}
+ggplot(mpg, aes(drv, displ)) +
+  geom_bar(stat = "identity")
+
+ggplot(mpg, aes(drv, ..count..)) +
+  geom_bar(aes(fill = class), position = "dodge")
+```
+
+
