@@ -1,5 +1,5 @@
 ---
-title: "ggplot2_exercises_solution"
+title: "ggplot2 Exercises Solution"
 author: "Jason Baik"
 date: "January 7, 2018"
 output: html_document
@@ -10,167 +10,154 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-## 3.5.5 Exercises
 
-1. 
+## 2.2.1 Exercises
+
+
+1. 5 Functions for more information about mpg dataset
 ```{r}
 library(tidyverse)
+```
+
+```{r}
+# Get structure of mpg
+str(mpg)
+glimpse(mpg)
+
+# Dimensions
+dim(mpg)
+
+# A small glimpse of the data
 head(mpg)
+tail(mpg)
+
+# Variables in the data
+names(mpg)
+
+```
+
+2. Finding out other datasets in ggplot2
+  
+  > data(package = "ggplot2") 
+*This should open up a new window named "R data sets"
+
+3. Conversion of cty and hwy into European standard of 1/100km
+```{r}
+# Original cty and hwy variables are in miles per gallon (mpg). So, I did some research online: (https://www.unitjuggler.com/convert-fuelconsumption-from-mpg-to-lper100km.html) 
+#Let's multiply cty and hwy by 235.21
 mpg %>% 
-  ggplot(aes(x = cyl, y = hwy)) +
-  geom_boxplot(aes(group = cyl))
+  mutate(cty = cty*235.21, hwy = hwy*235.21)
+
+
+```
+
+4. Manufacturer with the most models? Model with most variations? Remove redundant specification of drive train from model name?
+```{r}
+mpg %>% 
+  count(manufacturer, sort = T)
+
+# Assumption: Model with the most variations means model with most variations in drv variable
+mpg %>% 
+  group_by(model, manufacturer, drv) %>% 
+  summarise(sum_drv = as.numeric(table(drv)))
+  
+
+```
+* Dodge has the most models!  
+_Need help with getting varations in the models_
+
+## 2.3.1 Exercises
+
+
+1. Relationship between cty and hwy.
+```{r}
+mpg %>% ggplot(aes(cty, hwy)) +
+  geom_point()
   
 ```
-* I need to set group aesthetic and set it to cyl
 
-2. 
-```{r}
-mpg %>% 
-  ggplot(aes(displ, cty)) +
-  geom_boxplot(aes(group = displ))
-```
-
-3. Tricky
-
-4. 
-```{r}
-ggplot(mpg, aes(drv)) +
-  geom_bar() # 3 bars
-
-ggplot(mpg, aes(drv, fill = hwy, group = hwy)) +
-  geom_bar() # 3 bars
-
-library(dplyr)
-mpg2 <- mpg %>% arrange(hwy) %>% mutate(id = seq_along(hwy))
-ggplot(mpg2, aes(drv, fill = hwy, group = id), color = "red") +
-  geom_bar() # 3 bars
-```
-
-5.
-```{r}
-install.packages("babynames")
-library(babynames)
-hadley <- filter(babynames, name == "Hadley")
-hadley
-ggplot(hadley, aes(year, n, color = sex)) +
-  geom_line() +
-  labs(y = "Count", x = "Year", title = "The baby name Hadley is more popular among baby girls")
-  
-```
-
-## 3.11.1 Exercises
-
-1. 
-```{r}
-diamonds %>% 
-  ggplot(aes(carat)) +
-  geom_histogram(binwidth = 0.1)
-# A binwidth of 0.1 tells you the most correct graph
-```
+* Relationship is linear, positive, and strong without any glaring outliers. The only concern I have about the plot is that _it is almost too perfect_. Perhaps multicollinearity?
 
 2.
-```{r}
-diamonds %>% 
-  ggplot(aes(price)) +
-  geom_histogram()
-
-# I see a distribution where as price increases, count decreases. Right-skewed.
+```{r, echo = F}
+ggplot(mpg, aes(model, manufacturer)) +
+  geom_point()
 ```
+* The problem is there are too many x-axis labels, so its impossible to read the values. One fix would be to shorten the model names: get rid of drv values ,manufacturers, and spaces. If this does not suffice, rotate the x-axis values 90 degrees.
+
+3. The first two graphs will be scatterplots. #1 graph will have a high correlation and be linear, as we saw above. #2 graph should show a positive relationship (common sense?). #3 graph will be a line graph that changes with time (x-axis). #4 graph will be a histogram with counts of cty on the y-axis.
+
+
+
+## 2.4.1 Exercises
+
+
+1.
+```{r, echo = F}
+# Mapping to categoorical variable
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = drv))
+
+# Mapping to continuous variable
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = year))
+```
+* Based upon these graphs, mapping color to categorical variable is informative while mapping it to continiuous variable is not. 
+
+```{r, echo = F, error = T}
+# Mapping to categoorical variable
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(shape = drv))
+
+# Mapping to continuous variable
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(shape = year))
+```
+
+
+Mapping categorical variable to shape works (produces a graph), but readability is very poor. Mapping to continuous variable throws an error
+
+```{r}
+# Mapping to categoorical variable
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(size = drv))
+
+# Mapping to continuous variable
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(size = year))
+```
+* Mapping categorical/continuous variable to size works, but readbility is very poor.
+
+
+### Using 2 aesthetics in a plot
+```{r, echo = F}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(size = drv, color = drv))
+
+```
+* Ah, readability is much better.
+
+2. When you map a continuous variable to shape, you get an error. Why:The shape palette can deal with a maximum of 6 discrete values because more than 6 becomes difficult to discriminate (ggplot2 documentation).
+
+```{r, echo = F}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(shape = trans))
+```
+* ggplot2 only takes 6 discrete values! If we want more shapes, we have to manually designate them.
 
 3.
-```{r}
-ggplot(diamonds, aes(clarity, price)) +
-  geom_boxplot()
-# It seems like as clarity changes from worst (I1) to best (IF), median of prices decreases
+```{r, echo = F}
+ggplot(mpg, aes(drv, cty)) +
+  geom_bar(stat = "identity")
 ```
-
-4.
-```{r}
-ggplot(diamonds, aes(depth)) +
-  geom_density(alpha = 0.1) +
-  geom_freqpoly()
-```
-
-## 5.4.3  Exercises
-1.
-```{r}
-ggplot(mpg) + 
-  geom_point(aes(mpg$disp, mpg$hwy))
-# can be turned into
-ggplot(mpg) +
-  geom_point(aes(disp, hwy))
-
-ggplot() + 
-  geom_point(mapping = aes(y = hwy, x = cty), data = mpg) + 
-  geom_smooth(data = mpg, mapping = aes(cty, hwy)) 
-# can be turned into
-ggplot(mpg, aes(cty, hwy)) + 
-  geom_point() +
-  geom_smooth()
-
-ggplot(diamonds, aes(carat, price)) +
-  geom_point(aes(log(brainwt), log(bodywt)), data = msleep) 
-# can be turned into
-ggplot() +
-  geom_point(aes(log(brainwt), log(bodywt)), data = msleep) 
-```
-2.
-```{r}
-ggplot(mpg) +
-  geom_point(aes(class, cty)) +
-  geom_boxplot(aes(trans, hwy))
-```
-This doesn't work because there are double x/y values. R simply ignores the latter values,
-
-3. 
-```{r}
-ggplot(mpg) +
-  geom_point(aes(class, cty)) +
-  geom_line(aes(hwy, cty))
-# R gets confused and only displays the first x-value on the x-axis
-
-ggplot(mpg) +
-  geom_point(aes(hwy, cty)) +
-  geom_line(aes(class, cty))
-# It gives an error: Discrete value supplied to continuous scale
-```
-
-## 5.5.1 Exercises
-
-Question 4.
-  1. geom_violin()
-  2. 
-```{r}
-ggplot(mpg) +
-  geom_jitter(aes(x = hwy, y = cty, alpha = 0.1, size = cyl)) +
-  theme(legend.position = "none")
-```
-  3. 
-```{r}
-ggplot(mpg) +
-  geom_hex(aes(x = hwy, y = cty, size = cyl)) +
-  theme(legend.position = "none")
-```
-  4.
-```{r}
-ggplot(mpg, aes(cyl, drv)) +
-  geom_count() +
-  theme(legend.position = "none")
-```
-  5. geom_area()
-  6. geom_path
-  
-Question 5.
-* geom_line() or geom_path()
-* geom_bar() 
-* geom_area() or geom_line() or geom_step()
-* geom_map()
-* geom_label()
+* Looks like "f" has the most fuel economy, followed by "4" and "r"
 
 ```{r}
-ggplot(diamonds, aes(price)) +
-  geom_histogram(binwidth = 500)
+ggplot(mpg, aes(drv, displ)) +
+  geom_bar(stat = "identity")
 
-ggplot(diamonds, aes(price)) +
-  geom_histogram(aes(y = ..density..), binwidth = 500)
+ggplot(mpg, aes(drv, ..count..)) +
+  geom_bar(aes(fill = class), position = "dodge")
 ```
+
+
