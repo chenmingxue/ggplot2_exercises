@@ -338,7 +338,7 @@ ggplot(mpg2, aes(drv, fill = hwy, group = id), color = "red") +
 
 5.
 ```{r}
-install.packages("babynames")
+#install.packages("babynames")
 library(babynames)
 hadley <- filter(babynames, name == "Hadley")
 hadley
