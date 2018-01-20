@@ -2,11 +2,14 @@
 title: "ggplot2_exercises_solution"
 author: "Jason Baik"
 date: "January 7, 2018"
-output: html_document
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, error = TRUE, comment = "")
 ```
 
 
@@ -381,3 +384,332 @@ ggplot(diamonds, aes(depth)) +
   geom_freqpoly()
 ```
 _Need Help with determining variable_ 
+
+
+
+## 4.5 Exercises
+
+1. Looks like red line is geom_path() and dark grey line is geom_line(). Thickness of line is determined by the number of survivors. Actually, now that I look at the legend, color (Red or Gray) is determined by direction. There are also labels, so geom_text(aes(label)) is used. 
+
+2. _Need help dissecting these graphs_
+
+3. Used maps package with geom_polygon()
+
+4. _Need help dissecting these graphs_
+
+5. _Need help dissecting these graphs_
+
+6. Used maps package with geom_polygon()
+
+7. 
+
+
+## 5.3.1 Exercises
+
+1. You set the geoms most commonly after setting the data first, so ggplot() lists data as the first argument while layer functions list mapping as their first arguments.
+
+2. Help from [StackOverflow](https://stackoverflow.com/questions/48242755/ggplot-number-of-points-according-to-x-value#48243049) 
+
+```{r}
+library(tidyverse)
+class <- mpg %>%
+group_by(class) %>% 
+summarise(n = n()) %>% 
+mutate(label = paste0("n = ", n))
+
+ggplot(data = mpg, aes(class, hwy)) +
+ #geom_point() + unnecessary, see Jake's comment 
+  geom_jitter(width = 0.1) +
+ stat_summary(geom = "point", fun.y = mean, colour = "red", size = 5) +
+ geom_text(data = class, aes(y = 10, label = label))
+```
+
+```{r}
+ggplot(mpg, aes(cty, hwy)) +
+  geom_point(aes(colour = "darkblue")) +
+  scale_colour_identity()
+```
+
+
+
+
+
+## 5.4.3  Exercises
+1.
+```{r}
+# ggplot(mpg) + 
+# geom_point(aes(mpg$disp, mpg$hwy))
+# can be turned into
+ggplot(mpg) +
+  geom_point(aes(disp, hwy))
+
+# ggplot() + 
+# geom_point(mapping = aes(y = hwy, x = cty), data = mpg) + 
+# geom_smooth(data = mpg, mapping = aes(cty, hwy)) 
+# can be turned into
+ggplot(mpg, aes(cty, hwy)) + 
+  geom_point() +
+  geom_smooth()
+
+# ggplot(diamonds, aes(carat, price)) +
+# geom_point(aes(log(brainwt), log(bodywt)), data = msleep) 
+# can be turned into
+ggplot() +
+  geom_point(aes(log(brainwt), log(bodywt)), data = msleep) 
+```
+2.
+```{r}
+ggplot(mpg) +
+  geom_point(aes(class, cty)) +
+  geom_boxplot(aes(trans, hwy))
+```
+* This doesn't work because there are duplicate x and y values. R simply ignores the latter values,
+
+3. 
+```{r}
+ggplot(mpg) +
+  geom_point(aes(class, cty)) +
+  geom_line(aes(hwy, cty))
+# R gets confused and only displays the first x-value on the x-axis
+
+ggplot(mpg) +
+  geom_point(aes(hwy, cty)) +
+  geom_line(aes(class, cty))
+# It gives an error: Discrete value supplied to continuous scale
+```
+
+
+## 5.5.1 Exercises
+
+Q2.
+
+Q3. 
+
+Q4.
+  1. geom_violin()
+  2. 
+```{r}
+ggplot(mpg) +
+  geom_jitter(aes(x = hwy, y = cty, alpha = 0.1, size = cyl)) +
+  theme(legend.position = "none")
+```
+  3. 
+```{r}
+ggplot(mpg) +
+  geom_hex(aes(x = hwy, y = cty, size = cyl)) +
+  theme(legend.position = "none")
+```
+  4.
+```{r}
+ggplot(mpg, aes(cyl, drv)) +
+  geom_count() +
+  theme(legend.position = "none")
+```
+  5. geom_area()
+  6. geom_path
+  
+Question 5.
+* Display how a variable has changed over time:  geom_line() or geom_path()
+*  Show the detailed distribution of a single variable:  geom_bar() 
+*  Focus attention on the overall trend in a large dataset: geom_area() or geom_line() or geom_step()
+* Draw a map: geom_map()
+* Label outlying points: geom_label()
+
+
+
+## 5.6.2 Exercises
+
+1.
+```{r}
+mod <- loess(hwy ~ displ, data = mpg) 
+smoothed <- data.frame(displ = seq(1.6, 7, length = 50))
+pred <- predict(mod, newdata = smoothed, se = TRUE) 
+smoothed$hwy <- pred$fit 
+smoothed$hwy_lwr <- pred$fit - 1.96 * pred$se.fit # code to find lower range 
+smoothed$hwy_upr <- pred$fit + 1.96 * pred$se.fit # code to find upper range 
+
+# We should extract from smoothed the outlier points (outside the lower and upper ranges)
+outlier <- filter(smoothed, hwy < hwy_lwr | hwy > hwy_upr)
+smoothed
+outlier # there are no outliers!
+# Solution:
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_line(data = smoothed, color = "blue", size = 1.5) 
+```
+
+2.
+* First graph looks like geom_step()
+* Second graph
+* Third graph 
+
+3.
+```{r}
+# Help for stat_sum()
+?stat_sum
+
+ggplot(mpg, aes(cty, hwy)) +
+ geom_point()
+
+ggplot(mpg, aes(cty, hwy)) +
+ geom_count() +
+ scale_size_area()
+
+mpg %>% 
+  group_by(drv, trans) %>% 
+  summarise(n = n()) %>% 
+  mutate(drv_trans = paste0(drv, "-", trans)) %>% 
+  ggplot() +
+  geom_bar(aes(drv_trans, n), stat = "identity") +
+  coord_flip()
+```
+
+
+## 5.7.1 Exericses
+
+1.
+```{r}
+?position_nudge()
+```
+* position_nudge is generally useful for adjusting the position of items on discrete scales by a small amount. Nudging is built in to geom_text because it's so useful for moving labels a small distance from what they're labelling.
+
+2. _Need Help here_
+
+3. Borrowed from [U of Chicago](http://cfss.uchicago.edu/r4ds_solutions.html)
+Rather than adding random noise, geom_count() counts the number of observations at each location, then maps the count to point area. The more observations are located at that area, the larger the point.
+
+4. Borrowed from this [Source](http://www.vizwiz.com/2012/10/stacked-area-chart-vs-line-chart-great.html)
+With a stacked area plot, it is hard to interpret the magnitude of the area of each color because of the colors below it. With the line plot, you can interpret the trends for each region and area for each region easier. An advantage of a stacked area plot is its differentiability. With colored areas you can easily distinguish between areas underneath the line and thus, distinguish the trends. 
+
+
+## 6.2.1 Exercises
+
+1. _Need Help_
+
+2.
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  scale_y_continuous("Highway mpg")
+```
+
+
+## 6.3.3 Exercises
+
+1.
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(size = 4) +
+  xlab("Displacement") + 
+  ylab(quote(Highway(miles/gallon))) +
+  scale_x_continuous(breaks = c(2, 3, 4, 5, 6, 7),
+                     labels = c("2L", "3L", "4L", "5L", "6L", "7L"))
+```
+
+2. You can supply NULL, functions, and vectors
+
+3.
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = drv), size = 5)
+```
+
+4.quote() allows you to make the mathematical expressions. Second part of question is asking for the function that converts numbers into ordinals. This package (toOrdinal) does that: https://cran.r-project.org/web/packages/toOrdinal/toOrdinal.pdf
+
+5. _Need Help_
+
+
+
+## 6.4.4 Exercises
+
+1. theme(legend.position = "left")
+
+2. _Need help_
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = drv, shape = drv)) + 
+  scale_colour_discrete("Drive train") +
+  scale_shape_discrete("Drive Train")
+
+```
+
+3.
+```{r}
+ggplot(mpg, aes(displ, hwy, colour = class)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = F) +
+  theme(legend.position = "bottom", legend.box = "horizontal") +
+  scale_color_discrete(NULL) +
+  guides(color = guide_legend(nrow = 1))
+
+```
+
+
+## 6.5.1 Exercises
+
+1.
+```{r}
+library(tidyverse)
+fwd <- subset(mpg, drv == "f") 
+rwd <- subset(mpg, drv == "r")
+ggplot(fwd, aes(displ, hwy, colour = class)) + 
+  geom_point() +
+  scale_colour_discrete(limits = c("2seater", "compact", "midsize", "minivan",
+                                   "pickup", "subcompact", "suv"))
+ggplot(rwd, aes(displ, hwy, colour = class)) + 
+  geom_point() +
+  scale_colour_discrete(limits = c("2seater", "compact", "midsize", "minivan",
+                                   "pickup", "subcompact", "suv"))
+
+# Added scale_colour_discrete()
+```
+
+2. _Need help_
+```{r}
+expand_limits
+```
+
+3. 
+```{r}
+ggplot(fwd, aes(displ, hwy, colour = class)) + 
+  geom_point() +
+  xlim(2,3) +
+  xlim(2,5)
+# As we can see here, ggplot ignores first xlim call and runs the second one.
+```
+
+4.
+```{r}
+ggplot(fwd, aes(displ, hwy, colour = class)) + 
+  geom_point() +
+  scale_x_continuous(limits = c(NA, NA)) 
+# It nullifies limits on the graph.
+```
+
+```{r}
+ggplot(luv_colours, aes(u, v)) +
+  geom_point(aes(colour = col), size = 3) +
+  scale_color_identity() +
+  coord_equal()
+
+```
+
+## 6.5.5 Exercises
+
+1. _Need Help_
+
+2.
+```{r}
+# Save character values of colors in r_color
+r_color <- colours()
+
+# ggplot same graph as ones provided in book, except put r_color in color aesthetic.
+ggplot(luv_colours, aes(u, v)) +
+  geom_point(aes(colour = r_color), size = 3) +
+  scale_color_identity() +
+  coord_equal()
+
+```
+
+
+
