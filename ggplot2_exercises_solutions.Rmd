@@ -1,5 +1,5 @@
 ---
-title: "ggplot2_exercises_solution"
+title: "ggplot2 Exercises Solution"
 author: "Jason Baik"
 date: "January 7, 2018"
 output:
@@ -42,7 +42,8 @@ names(mpg)
 2. Finding out other datasets in ggplot2
   
   > data(package = "ggplot2") 
-*This should open up a new window named "R data sets"
+  
+* This should open up a new window named "R data sets"
 
 3. Conversion of cty and hwy into European standard of 1/100km
 ```{r}
@@ -50,9 +51,13 @@ names(mpg)
 #Let's multiply cty and hwy by 235.21
 mpg %>% 
   mutate(cty = cty*235.21, hwy = hwy*235.21)
-
-
 ```
+
+```{r}
+mpg %>% group_by(model) %>% unique() %>% count() -> variations2
+variations[which.max(variations$n),"model"]
+```
+
 
 4. Manufacturer with the most models? Model with most variations? Remove redundant specification of drive train from model name?
 ```{r}
@@ -64,10 +69,17 @@ mpg %>%
   group_by(model, manufacturer, drv) %>% 
   summarise(sum_drv = as.numeric(table(drv)))
   
-
+mpg %>% group_by(model) %>% unique() %>% count() -> variations
+variations[which.max(variations$n),"model"]
 ```
 * Dodge has the most models!  
 _Need help with getting varations in the models_
+
+```{r}
+mpg[,c("manufacturer","model")] %>% group_by(manufacturer) %>% unique() %>% count() -> modelCount
+modelCount[which.max(modelCount$n),"manufacturer"]
+```
+
 
 ## 2.3.1 Exercises
 
@@ -97,7 +109,7 @@ ggplot(mpg, aes(model, manufacturer)) +
 
 1.
 ```{r, echo = F}
-# Mapping to categoorical variable
+# Mapping to categorical variable
 ggplot(mpg, aes(displ, hwy)) +
   geom_point(aes(color = drv))
 
@@ -132,7 +144,7 @@ ggplot(mpg, aes(displ, hwy)) +
 * Mapping categorical/continuous variable to size works, but readbility is very poor.
 
 
-### Using 2 aesthetics in a plot
+* Using 2 aesthetics in a plot
 ```{r, echo = F}
 ggplot(mpg, aes(displ, hwy)) +
   geom_point(aes(size = drv, color = drv))
@@ -163,8 +175,9 @@ ggplot(mpg, aes(drv, ..count..)) +
   geom_bar(aes(fill = class), position = "dodge")
 ```
 
+## 2.5.1 Exercises
 ```{r}
-library(tidyverse)
+# library(tidyverse)
 ggplot(mpg, aes(cty, displ)) +
   geom_point() +
   facet_wrap(~hwy)
@@ -178,7 +191,7 @@ ggplot(mpg, aes(cty, displ)) +
 ```
 * You see some information for all the cylinders except 5 cylinder graph.
 
-* I think the key difference is that a continous variable has so many values that its impossible to get alot of information for each facetted graph. It has minimal information. On the other hand, for categorical variables, there are not many facetted graphs, so you get a reasonable amount of information from each graph.
+* I think the key difference is that a continous variable has so many values that its impossible to get alot of information for each faceted graph. It has minimal information. On the other hand, for categorical variables, there are not many facetted graphs, so you get a reasonable amount of information from each graph.
 
 
 2.
@@ -211,7 +224,11 @@ ggplot(mpg, aes(cty)) +
 
 ggplot(mpg, aes(hwy)) +
   geom_histogram(binwidth = 1)
+
+
 ```
+
+
 
 2. 
 ```{r}
@@ -252,7 +269,19 @@ g + geom_bar(aes(weight = displ))
 
 * weight aesthetic in the above code "weights" the number of cars in each class according to engine displacement.
 
-7. _Need Help with this Question_
+7. 
+[Amanda's solutions](https://github.com/AmandaRP/ggplot2-exercises/blob/master/Chapter2.Rmd)
+```{r}
+# The following is a bar chart of trans with faceting on cyl.
+ggplot(mpg,aes(trans)) + geom_bar() + facet_wrap(~cyl)
+
+# We can also use a bar chart with stacking:
+ggplot(mpg,aes(class)) + geom_bar(aes(fill=trans))
+
+# it shows model by manufacturer with jitter turned on.
+ggplot(mpg,aes(model,manufacturer)) + geom_point() + geom_jitter()
+```
+
 
 
 ## 3.2.1 Exercises
@@ -418,20 +447,10 @@ summarise(n = n()) %>%
 mutate(label = paste0("n = ", n))
 
 ggplot(data = mpg, aes(class, hwy)) +
- #geom_point() + unnecessary, see Jake's comment 
   geom_jitter(width = 0.1) +
- stat_summary(geom = "point", fun.y = mean, colour = "red", size = 5) +
- geom_text(data = class, aes(y = 10, label = label))
+  stat_summary(geom = "point", fun.y = mean, colour = "red", size = 5) +
+  geom_text(data = class, aes(y = 10, label = label))
 ```
-
-```{r}
-ggplot(mpg, aes(cty, hwy)) +
-  geom_point(aes(colour = "darkblue")) +
-  scale_colour_identity()
-```
-
-
-
 
 
 ## 5.4.3  Exercises
@@ -463,7 +482,7 @@ ggplot(mpg) +
   geom_point(aes(class, cty)) +
   geom_boxplot(aes(trans, hwy))
 ```
-* This doesn't work because there are duplicate x and y values. R simply ignores the latter values,
+*This doesn't work because there are duplicate x and y values. R simply ignores the latter values,
 
 3. 
 ```{r}
@@ -481,41 +500,45 @@ ggplot(mpg) +
 
 ## 5.5.1 Exercises
 
-Q2.
+Question 2. _Need Help_
 
-Q3. 
+Question 3. _Need Help_
 
-Q4.
-  1. geom_violin()
-  2. 
+Question 4.
+
+1. geom_violin()
+
+2. 
 ```{r}
 ggplot(mpg) +
   geom_jitter(aes(x = hwy, y = cty, alpha = 0.1, size = cyl)) +
   theme(legend.position = "none")
 ```
-  3. 
+
+3. 
 ```{r}
 ggplot(mpg) +
   geom_hex(aes(x = hwy, y = cty, size = cyl)) +
   theme(legend.position = "none")
 ```
-  4.
+
+4.
 ```{r}
 ggplot(mpg, aes(cyl, drv)) +
   geom_count() +
   theme(legend.position = "none")
 ```
-  5. geom_area()
-  6. geom_path
+
+5. geom_area()
+
+6. geom_path
   
 Question 5.
 * Display how a variable has changed over time:  geom_line() or geom_path()
-*  Show the detailed distribution of a single variable:  geom_bar() 
-*  Focus attention on the overall trend in a large dataset: geom_area() or geom_line() or geom_step()
+* Show the detailed distribution of a single variable:  geom_bar() 
+* Focus attention on the overall trend in a large dataset: geom_area() or geom_line() or geom_step()
 * Draw a map: geom_map()
 * Label outlying points: geom_label()
-
-
 
 ## 5.6.2 Exercises
 
@@ -546,14 +569,7 @@ ggplot(mpg, aes(displ, hwy)) +
 3.
 ```{r}
 # Help for stat_sum()
-?stat_sum
-
-ggplot(mpg, aes(cty, hwy)) +
- geom_point()
-
-ggplot(mpg, aes(cty, hwy)) +
- geom_count() +
- scale_size_area()
+# ?stat_sum
 
 mpg %>% 
   group_by(drv, trans) %>% 
@@ -614,7 +630,7 @@ ggplot(mpg, aes(displ, hwy)) +
   geom_point(aes(color = drv), size = 5)
 ```
 
-4.quote() allows you to make the mathematical expressions. Second part of question is asking for the function that converts numbers into ordinals. This package (toOrdinal) does that: https://cran.r-project.org/web/packages/toOrdinal/toOrdinal.pdf
+4. quote() allows you to make the mathematical expressions. Second part of question is asking for the function that converts numbers into ordinals. This package (toOrdinal) does that: https://cran.r-project.org/web/packages/toOrdinal/toOrdinal.pdf
 
 5. _Need Help_
 
